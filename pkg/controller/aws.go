@@ -65,7 +65,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
-	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
@@ -101,6 +100,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/configurationset"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailidentity"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailtemplate"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -113,6 +115,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
+		configurationset.SetupConfigurationSet,
 		database.SetupRDSInstance,
 		docdbinstance.SetupDBInstance,
 		docdbcluster.SetupDBCluster,
@@ -121,6 +124,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		eks.SetupCluster,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
+		emailidentity.SetupEmailIdentity,
+		emailtemplate.SetupEmailTemplate,
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
@@ -188,7 +193,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
 		kafkacluster.SetupCluster,
-		efsmounttarget.SetupMountTarget,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
