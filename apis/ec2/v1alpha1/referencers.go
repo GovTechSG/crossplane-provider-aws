@@ -26,11 +26,11 @@ import (
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
-// ResolveReferences of this VPCCIDRBlock
-func (mg *VPCCIDRBlock) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this VPCPeeringConnection
+func (mg *VPCPeeringConnection) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.vpcId
+	// Resolve spec.forProvider.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
@@ -39,9 +39,24 @@ func (mg *VPCCIDRBlock) ResolveReferences(ctx context.Context, c client.Reader) 
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.vpcId")
+		return errors.Wrap(err, "spec.forProvider.vpcID")
 	}
 	mg.Spec.ForProvider.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.peerVPCID
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.PeerVPCID),
+		Reference:    mg.Spec.ForProvider.PeerVPCIDRef,
+		Selector:     mg.Spec.ForProvider.PeerVPCIDSelector,
+		To:           reference.To{Managed: &v1beta1.VPC{}, List: &v1beta1.VPCList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.peerVPCID")
+	}
+	mg.Spec.ForProvider.PeerVPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.PeerVPCIDRef = rsp.ResolvedReference
+
 	return nil
 }

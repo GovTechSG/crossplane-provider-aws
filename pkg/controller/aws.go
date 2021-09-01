@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"time"
+
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -44,6 +46,10 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	docdbcluster "github.com/crossplane/provider-aws/pkg/controller/docdb/dbcluster"
+	docdbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbclusterparametergroup"
+	docdbinstance "github.com/crossplane/provider-aws/pkg/controller/docdb/dbinstance"
+	docdbsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
@@ -55,6 +61,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
@@ -73,22 +80,29 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/openidconnectprovider"
+	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
+	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
+	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverendpoint"
+	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverrule"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/configurationset"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailidentity"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailtemplate"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -96,16 +110,22 @@ import (
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
-		config.Setup,
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter, time.Duration) error{
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
+		configurationset.SetupConfigurationSet,
 		database.SetupRDSInstance,
+		docdbinstance.SetupDBInstance,
+		docdbcluster.SetupDBCluster,
+		docdbclusterparametergroup.SetupDBClusterParameterGroup,
+		docdbsubnetgroup.SetupDBSubnetGroup,
 		eks.SetupCluster,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
+		emailidentity.SetupEmailIdentity,
+		emailtemplate.SetupEmailTemplate,
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
@@ -159,6 +179,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		key.SetupKey,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
+		dbinstance.SetupDBInstance,
 		dbparametergroup.SetupDBParameterGroup,
 		globalcluster.SetupGlobalCluster,
 		vpccidrblock.SetupVPCCIDRBlock,
@@ -168,11 +189,15 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		function.SetupFunction,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
+		resolverendpoint.SetupResolverEndpoint,
+		resolverrule.SetupResolverRule,
+		vpcpeeringconnection.SetupVPCPeeringConnection,
+		kafkacluster.SetupCluster,
 	} {
-		if err := setup(mgr, l, rl); err != nil {
+		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return config.Setup(mgr, l, rl)
 }
