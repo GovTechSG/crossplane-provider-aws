@@ -1,0 +1,15 @@
+apiVersion: sesv2.aws.crossplane.io/v1alpha1
+kind: EmailTemplate
+metadata:
+  name: example-emailtemplate
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    region: us-east-1
+    templateContent:
+      html: "<h1>AWS Amazon Simple Email Service Test Email</h1>"
+      subject: "Amazon SES Test (Crossplane)"
+      text: "This email was send with Amazon SES using Email Template created from Crossplane."
+    templateName: example-emailtemplate-name
+  providerConfigRef:
+    name: example

@@ -1,0 +1,17 @@
+apiVersion: sesv2.aws.crossplane.io/v1alpha1
+kind: EmailIDentity
+metadata:
+  name: example-email
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    configurationSetName: example-configset-name
+    emailIDentity: myemail@mydomain
+    region: us-east-1
+    tags:
+    - key: mykey1
+      value: myvalue1
+    - key: mykey1
+      value: myvalue2
+  providerConfigRef:
+    name: example
