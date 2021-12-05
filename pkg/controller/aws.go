@@ -116,6 +116,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/configurationset"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailidentity"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailtemplate"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -130,6 +133,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
+		configurationset.SetupConfigurationSet,
 		database.SetupRDSInstance,
 		docdbinstance.SetupDBInstance,
 		docdbcluster.SetupDBCluster,
@@ -140,6 +144,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		identityproviderconfig.SetupIdentityProviderConfig,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
+		emailidentity.SetupEmailIdentity,
+		emailtemplate.SetupEmailTemplate,
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
