@@ -1,0 +1,23 @@
+apiVersion: sesv2.aws.crossplane.io/v1alpha1
+kind: EmailIdentity
+metadata:
+  name: example-domain
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    configurationSetName: example-configset-name
+    dkimSigningAttributes: #only during first creation
+      domainSigningPrivateKey: base64_encoded_pk
+      domainSigningSelector: subdomain #Without suffix ._domainkey.mydomain
+    mailFromAttributes:
+      behaviorOnMxFailure: USE_DEFAULT_VALUE #USE_DEFAULT_VALUE | REJECT_MESSAGE
+      mailFromDomain: subdomain.mydomain
+    emailIDentity: mydomain
+    region: us-east-1
+    tags:
+    - key: mykey1
+      value: myvalue1
+    - key: mykey1
+      value: myvalue2
+  providerConfigRef:
+    name: example
