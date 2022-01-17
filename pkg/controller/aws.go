@@ -136,6 +136,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/configurationset"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailidentity"
+	"github.com/crossplane/provider-aws/pkg/controller/sesv2/emailtemplate"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -263,6 +266,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		transitgatewayroutetable.SetupTransitGatewayRouteTable,
 		vpcendpointserviceconfiguration.SetupVPCEndpointServiceConfiguration,
 		kinesisstream.SetupStream,
+		configurationset.SetupConfigurationSet,
+		emailidentity.SetupEmailIdentity,
+		emailtemplate.SetupEmailTemplate,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
